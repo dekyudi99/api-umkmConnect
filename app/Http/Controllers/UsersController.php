@@ -17,11 +17,18 @@ class UsersController extends Controller
     {
         $user = User::all();
 
-        return response()->json([
-            'success' => true,
-            'message' =>'List Semua User',
-            'data'    => $user
-        ], 200);
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal',
+            ], 200);
+        } else {
+            return response()->json([
+                'success' => true,
+                'massage' => 'List Semua User',
+                'data' => $user,
+            ]);
+        }
     }
 
     public function store(Request $request)
@@ -172,7 +179,7 @@ class UsersController extends Controller
         }
     }
 
-    // Normal User Access
+    // Admin & Normal User Profile
     public function updateMe(Request $request) {
         $userId = Auth::id();
         $user = User::whereId($userId)->first();

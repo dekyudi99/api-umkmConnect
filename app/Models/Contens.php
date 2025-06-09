@@ -7,9 +7,9 @@ use App\Models\UserProgress;
 
 class Contens extends Model 
 {
-    protected $table = 'contens';
+    protected $table = 'contents';
     protected $fillable = [
-        'title', 'video', 'description', 'thumnail', 'topic',
+        'title', 'video', 'description', 'creator',
     ];
 
     public function user() {

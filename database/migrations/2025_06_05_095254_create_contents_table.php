@@ -16,8 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('video');
             $table->text('description');
-            $table->text('thumnail');
-            $table->string('topic');
+            $table->text('creator');
             $table->timestamps();
         });
     }

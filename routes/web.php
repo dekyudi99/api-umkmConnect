@@ -17,6 +17,13 @@ $router->group(['middleware' => ['auth:api', 'role:admin']], function () use ($r
     $router->get('/users/detail/{id}', 'UsersController@show');
     $router->post('/users/update/{id}', 'UsersController@update');
     $router->delete('/users/delete/{id}', 'UsersController@destroy');
+
+    // Contents Management
+    $router->get('/contents/getAll', 'ContentsController@index');
+    $router->post('/contents/save', 'ContentsController@store');
+    $router->get('/contents/detail/{id}', 'ContentsController@show');
+    $router->post('/contents/update/{id}', 'ContentsController@update');
+    $router->delete('/contents/delete/{id}', 'ContentsController@delete');
 });
 
 $router->group(['middleware' => ['auth:api', 'role:normal,admin']], function () use ($router) {
@@ -30,4 +37,7 @@ $router->group(['middleware' => ['auth:api', 'role:normal,admin']], function () 
 
     //Logout
     $router->post('/logout', 'AuthController@logout');
+
+    // Progress User
+    $router->post('/progress/{id}', 'UserProgressController@index');
 });

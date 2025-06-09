@@ -8,9 +8,9 @@ use App\Models\Contens;
 
 class UserProgress extends Model
 {
-    protected $table = 'user_progress';
+    protected $table = 'user_progres';
     protected $fillable = [
-        'user_id', 'content_id', 'progress', 'compleated_at',
+        'user_id', 'content_id', 'compleated_at',
     ];
 
     public function user() {
