@@ -51,7 +51,7 @@ class UsersController extends Controller
             $imagePath = null;
             if ($request->hasFile('path_image')) {
                 $imageName = Str::random(34) . '.' . $request->file('path_image')->getClientOriginalExtension();
-                $request->file('path_image')->move(storage_path('profile'), $imageName);
+                $request->file('path_image')->move(storage_path('app/public/profile'), $imageName);
                 $imagePath = $imageName;
             }
 
@@ -126,12 +126,12 @@ class UsersController extends Controller
         $imagePath = $user->path_image;
 
         if ($request->hasFile('path_image')) {
-            if ($user->path_image && Storage::disk('profile')->exists($user->path_image)) {
-                Storage::disk('profile')->delete($user->path_image);
+            if ($user->path_image && Storage::disk('app/public/profile')->exists($user->path_image)) {
+                Storage::disk('app/public/profile')->delete($user->path_image);
             }
 
             $imageName = Str::random(34) . '.' . $request->file('path_image')->getClientOriginalExtension();
-            $request->file('path_image')->move(storage_path('profile'), $imageName);
+            $request->file('path_image')->move(storage_path('app/public/profile'), $imageName);
             $imagePath = $imageName;
         }
 
@@ -211,11 +211,11 @@ class UsersController extends Controller
 
         if ($request->hasFile('path_image')) {
             if ($user->path_image && Storage::disk('profile')->exists($user->path_image)) {
-                Storage::disk('profile')->delete($user->path_image);
+                Storage::disk('app/public/profile')->delete($user->path_image);
             }
 
             $imageName = Str::random(34) . '.' . $request->file('path_image')->getClientOriginalExtension();
-            $request->file('path_image')->move(storage_path('profile'), $imageName);
+            $request->file('path_image')->move(storage_path('app/public/profile'), $imageName);
             $imagePath = $imageName;
         }
 

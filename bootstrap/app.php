@@ -83,17 +83,15 @@ $app->routeMiddleware([
 ]);
 
 // $app->middleware([
-    //     App\Http\Middleware\ExampleMiddleware::class
-    // ]);
-    
-    $app->routeMiddleware([
-        'auth' => App\Http\Middleware\Authenticate::class,
-    ]);
+//     App\Http\Middleware\ExampleMiddleware::class
+// ]);
 
+$app->routeMiddleware([
+    'auth' => App\Http\Middleware\Authenticate::class,
+]);
     
-    
-    /*
-    |--------------------------------------------------------------------------
+/*
+|--------------------------------------------------------------------------
 | Register Service Providers
 |--------------------------------------------------------------------------
 |
