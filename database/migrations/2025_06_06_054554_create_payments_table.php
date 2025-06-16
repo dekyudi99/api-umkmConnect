@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('order_id');
             $table->bigInteger('payment_gateway');
+            $table->string('payment_method');
             $table->string('paid_at');
             $table->timestamps();
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade')->onUpdate('cascade');

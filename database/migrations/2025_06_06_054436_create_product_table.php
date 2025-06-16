@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('stock');
             $table->string('image');
             $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

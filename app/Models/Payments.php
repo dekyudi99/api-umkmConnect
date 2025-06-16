@@ -9,7 +9,7 @@ class Payments extends Model
 {
     protected $table = 'payments';
     protected $fillable = [
-        'order_id', 'payment_gateway', 'paid_at',
+        'order_id', 'payment_gateway', 'payment_method', 'paid_at',
     ];
 
     public function order() {

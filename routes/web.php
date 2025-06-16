@@ -45,6 +45,11 @@ $router->group(['middleware' => ['auth:api', 'role:normal,admin']], function () 
     $router->delete('/product/delete/{id}', 'ProductsController@destroy');
     $router->get('/product/detail/{id}', 'ProductsController@show');
     $router->get('/product/getall', 'ProductsController@index');
+
+    // Edit dan Hapus Pesanan
+    $router->get('/order/getall', 'OrdersController@index');
+    $router->post('/order/update/{id}', 'OrdersController@update');
+    $router->delete('/order/delete/{id}', 'OrdersController@destroy');
 });
 
 $router->group(['middleware' => ['auth:api', 'role:normal']], function () use ($router) {
@@ -52,6 +57,10 @@ $router->group(['middleware' => ['auth:api', 'role:normal']], function () use ($
     $router->get('/product/myproduct', 'ProductsController@myProducts');
     $router->post('/product/save', 'ProductsController@store');
     $router->post('/product/update', 'ProductsController@update');
+
+    // Membuat pesanan dan Melihat pesanan saya
+    $router->post('/order/save/{id}', 'OrdersController@store');
+    $router->get('/order/myorder', 'OrdersController@myOrder');
 });
 
 $router->get('/profile/{filename}', function ($filename) {
