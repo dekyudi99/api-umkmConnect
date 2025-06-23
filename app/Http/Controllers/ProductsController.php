@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Products;
+use App\Models\Shop;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +34,8 @@ class ProductsController extends Controller
     public function myProducts()
     {
         $id = Auth::id();
-        $product = Products::where('user_id', $id)->get();
+        $user = User::whereId($id)->first();
+        $product = Products::where('shop_id', $user->shop->id)->get();
 
         if (!$product) {
             return response()->json([
@@ -42,7 +45,7 @@ class ProductsController extends Controller
         } else {
             return response()->json([
                 'success' => true,
-                'massage' => 'List Semua Product Anda',
+                'message' => 'List Semua Product Anda',
                 'data' => $product,
             ]);
         }
@@ -53,6 +56,8 @@ class ProductsController extends Controller
         $validator = Validator::make($request->all(), [
             'title'        => 'required',
             'description'  => 'required',
+            'location'     => 'required',
+            'category'     => 'required',
             'price'        => 'required|numeric',
             'stock'        => 'required|numeric',
             'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -63,8 +68,18 @@ class ProductsController extends Controller
                 'success' => false,
                 'message' => 'Validasi gagal!',
                 'data'    => $validator->errors()
-            ], 401);
+            ], 422);
         } else {
+            $id = Auth::id();
+            $user = User::whereId($id)->first();
+
+            if (!$user->shop || $user->shop->status !== "Telah Terverifikasi") {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda harus memiliki toko yang sudah terverifikasi untuk melakukan aksi ini.',
+                ], 403);
+            }
+
             $imagePath = null;
             if ($request->hasFile('image')) {
                 $imageName = Str::random(34) . '.' . $request->file('image')->getClientOriginalExtension();
@@ -72,14 +87,14 @@ class ProductsController extends Controller
                 $imagePath = $imageName;
             }
 
-            $id_user = Auth::id();
-
             $product = Products::create([
-                'user_id'     => $id_user,
+                'shop_id'     => $user->shop->id,
                 'title'       => $request->input('title'),
                 'description' => $request->input('description'),
+                'location'    => $request->input('location'),
+                'category'    => $request->input('category'),
                 'price'       => $request->input('price'),
-                'stock'        => $request->input('stock'),
+                'stock'       => $request->input('stock'),
                 'image'       => $imagePath,
             ]);
 
@@ -130,6 +145,8 @@ class ProductsController extends Controller
         $validator = Validator::make($request->all(), [
             'title'        => 'required',
             'description'  => 'required',
+            'location'     => 'required',
+            'category'     => 'required',
             'price'        => 'required|numeric',
             'stock'        => 'required|numeric',
             'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -161,6 +178,8 @@ class ProductsController extends Controller
             'user_id'     => $id_user,
             'title'       => $request->input('title'),
             'description' => $request->input('description'),
+            'location'    => $request->input('location'),
+            'category'    => $request->input('category'),
             'price'       => $request->input('price'),
             'stok'        => $request->input('stok'),
             'image'       => $imagePath,

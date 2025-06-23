@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('shop', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('invoice_number');
-            $table->integer('total_amount');
-            $table->integer('status');
-            $table->string('shipping_address');
+            $table->string('name');
+            $table->string('foto_ktp');
+            $table->string('fotoProfil_toko')->nullable();
+            $table->string('status')->default('Menunggu Verifikasi');
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
         });
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('_orders');
+        Schema::dropIfExists('shop');
     }
 };

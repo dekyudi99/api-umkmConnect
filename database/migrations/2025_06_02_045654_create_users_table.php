@@ -17,7 +17,6 @@ return new class extends Migration
             $table->String('email')->unique();
             $table->String('password');
             $table->String('role')->default('normal');
-            $table->String('bisnis_name')->nullable();
             $table->String('path_image')->nullable();
             $table->timestamps();
         });

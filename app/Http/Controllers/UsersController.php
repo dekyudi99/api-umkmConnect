@@ -31,53 +31,6 @@ class UsersController extends Controller
         }
     }
 
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name'         => 'required',
-            'email'        => 'required|email|unique:users,email',
-            'password'     => 'required|min:8',
-            'bisnis_name'  => 'nullable',
-            'path_image'   => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Semua Kolom Wajib Diisi!',
-                'data'    => $validator->errors()
-            ], 401);
-        } else {
-            $imagePath = null;
-            if ($request->hasFile('path_image')) {
-                $imageName = Str::random(34) . '.' . $request->file('path_image')->getClientOriginalExtension();
-                $request->file('path_image')->move(storage_path('app/public/profile'), $imageName);
-                $imagePath = $imageName;
-            }
-
-            $user = User::create([
-                'name'        => $request->input('name'),
-                'email'       => $request->input('email'),
-                'password'    => Hash::make($request->input('password')),
-                'bisnis_name' => $request->input('bisnis_name'),
-                'path_image'  => $imagePath,
-            ]);
-
-            if ($user) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'User Berhasil Disimpan!',
-                    'data'    => $user
-                ], 201);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User Gagal Disimpan!',
-                ], 400);
-            }
-        }
-    }
-
     public function show($id)
     {
         $user = User::find($id);
@@ -111,7 +64,6 @@ class UsersController extends Controller
             'name'         => 'required',
             'email'        => 'required|email|unique:users,email,'.$user->id,
             'password'     => 'nullable|min:8',
-            'bisnis_name'  => 'nullable',
             'path_image'   => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
@@ -138,7 +90,6 @@ class UsersController extends Controller
         $userData = [
             'name'        => $request->input('name'),
             'email'       => $request->input('email'),
-            'bisnis_name' => $request->input('bisnis_name'),
             'path_image'  => $imagePath,
         ];
 
@@ -195,7 +146,6 @@ class UsersController extends Controller
             'name'         => 'required',
             'email'        => 'required|email|unique:users,email,'.$user->id,
             'password'     => 'nullable|min:8',
-            'bisnis_name'  => 'nullable',
             'path_image'   => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
@@ -222,7 +172,6 @@ class UsersController extends Controller
         $userData = [
             'name'        => $request->input('name'),
             'email'       => $request->input('email'),
-            'bisnis_name' => $request->input('bisnis_name'),
             'path_image'  => $imagePath,
         ];
 

@@ -11,17 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::create('order_item', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id');
-            $table->BigInteger('amount');
-            $table->bigInteger('payment_gateway');
-            $table->bigInteger('gateway_transaction_id');
-            $table->string('payment_method');
-            $table->string('status')->nullable();
-            $table->string('paid_at')->nullable();
+            $table->unsignedBigInteger('product_id');
+            $table->integer('quantity');
+            $table->integer('price_at_purchase');
+            $table->string('name_at_purchase');
+            $table->string('description_at_purchase');
+            $table->bigInteger('subtotal');
             $table->timestamps();
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('product_id')->references('id')->on('product')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
@@ -30,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payments');
+        Schema::dropIfExists('order_item');
     }
 };

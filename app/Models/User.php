@@ -9,7 +9,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use App\Models\UserProgress;
-use App\Models\Products;
+use App\Models\Shop;
 use App\Models\Orders;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract, JWTSubject
@@ -17,7 +17,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     use Authenticatable, Authorizable;
 
     protected $table = 'users';
-    protected $fillable = ['name', 'email', 'password', 'role', 'bisnis_name', 'path_image'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'path_image'];
     protected $hidden = ['password'];
 
     // Implementasi JWTSubject
@@ -38,8 +38,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->hasMany(UserProgress::class, 'user_id', 'id');
     }
 
-    public function product() {
-        return $this->hasMany(Products::class, 'user_id', 'id');
+    public function shop() {
+        return $this->hasOne(Shop::class, 'user_id', 'id');
     }
 
     public function orders() {
