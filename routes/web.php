@@ -14,7 +14,6 @@ $router->group(['middleware' => ['auth:api', 'role:admin']], function () use ($r
     // User Management
     $router->get('/users/getall', 'UsersController@index');
     $router->get('/users/detail/{id}', 'UsersController@show');
-    $router->post('/users/update/{id}', 'UsersController@update');
     $router->delete('/users/delete/{id}', 'UsersController@destroy');
 
     // Contents Management
@@ -30,6 +29,9 @@ $router->group(['middleware' => ['auth:api', 'role:admin']], function () use ($r
 
     // Melihat semua product
     $router->get('/product/getall', 'ProductsController@index');
+
+    // Melihat semua toko
+    $router->get('/shop/shopall', 'ShopController@showAll');
 });
 
 $router->group(['middleware' => ['auth:api', 'role:normal,admin']], function () use ($router) {

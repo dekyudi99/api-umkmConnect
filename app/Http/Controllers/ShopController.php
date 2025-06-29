@@ -28,6 +28,23 @@ class ShopController extends Controller
         }
     }
 
+    public function showAll() {
+        $shop = Shop::all();
+        
+        if ($shop) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil memngambil data toko',
+                'data' => $shop,
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data'
+            ], 500);
+        }
+    }
+
     public function store(Request $request) {
         $id = Auth::id();
 
@@ -126,6 +143,7 @@ class ShopController extends Controller
         }
     }
 
+    // Untuk admin memvalidasi toko
     public function validasi(Request $request, $id) {
         $shop = Shop::whereId($id)->first();
         $validator = Validator::make($request->all(), [
