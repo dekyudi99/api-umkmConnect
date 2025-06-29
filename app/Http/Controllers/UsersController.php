@@ -75,22 +75,29 @@ class UsersController extends Controller
             ], 422);
         }
 
-        $imagePath = $user->path_image;
+        $imagePathForDb = $user->image; // Ambil nama gambar yang sudah ada
 
         if ($request->hasFile('path_image')) {
-            if ($user->path_image && Storage::disk('app/public/profile')->exists($user->path_image)) {
-                Storage::disk('app/public/profile')->delete($user->path_image);
+            // 1. Hapus gambar lama jika ada (dan bukan gambar default)
+            if ($user->image && $user->image != 'default.png') {
+                $oldImagePath = ('uploads/profile/' . $user->image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
             }
 
-            $imageName = Str::random(34) . '.' . $request->file('path_image')->getClientOriginalExtension();
-            $request->file('path_image')->move(storage_path('app/public/profile'), $imageName);
-            $imagePath = $imageName;
+            // 2. Simpan gambar baru (logika sama seperti store)
+            $imageFile = $request->file('path_image');
+            $imageName = time() . '_' . $imageFile->getClientOriginalName();
+            $imageFile->move('uploads/profile', $imageName);
+            
+            $imagePathForDb = $imageName; // Update dengan nama file baru
         }
 
         $userData = [
             'name'        => $request->input('name'),
             'email'       => $request->input('email'),
-            'path_image'  => $imagePath,
+            'path_image'  => $imagePathForDb,
         ];
 
         if ($request->has('password') && !empty($request->input('password'))) {

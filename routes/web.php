@@ -24,6 +24,12 @@ $router->group(['middleware' => ['auth:api', 'role:admin']], function () use ($r
     
     // Verifikasi user
     $router->post('/shop/validasi/{id}', 'ShopController@validasi');
+
+    // Melihat semua data
+    $router->get('/order/getall', 'OrdersController@orders');
+
+    // Melihat semua product
+    $router->get('/product/getall', 'ProductsController@index');
 });
 
 $router->group(['middleware' => ['auth:api', 'role:normal,admin']], function () use ($router) {
@@ -49,43 +55,49 @@ $router->group(['middleware' => ['auth:api', 'role:normal,admin']], function () 
     $router->get('/product/getall', 'ProductsController@index');
     $router->get('/product/detail/{id}', 'ProductsController@show');
     $router->delete('/product/delete/{id}', 'ProductsController@destroy');
-
-    // Edit dan Hapus Pesanan
-    $router->get('/order/getall', 'OrdersController@index');
-    $router->post('/order/update/{id}', 'OrdersController@update');
-    $router->delete('/order/delete/{id}', 'OrdersController@destroy');
 });
 
 $router->group(['middleware' => ['auth:api', 'role:normal']], function () use ($router) {
     // Management Product
     $router->get('/product/myproduct', 'ProductsController@myProducts');
     $router->post('/product/save', 'ProductsController@store');
-    $router->post('/product/update', 'ProductsController@update');
+    $router->post('/product/update/{id}', 'ProductsController@update');
 
-    // Membuat pesanan dan Melihat pesanan saya
-    $router->post('/order/save/{id}', 'OrdersController@store');
-    $router->get('/order/myorder', 'OrdersController@myOrder');
-
-    // Membuat toko
+    // Membuat dan menampilkan toko
     $router->post('/shop/save', 'ShopController@store');
+    $router->get('/shop/show', 'ShopController@show');
+    $router->post('/shop/update', 'ShopController@update');
+
+    // Menambahkan dan melihat product ke cart
+    $router->post('/order/cart/{id}', 'OrdersController@cart');
+    $router->get('/order/cart', 'OrdersController@mycart');
+
+    // Pesan product dari cart
+    $router->post('/order/orderCart', 'OrdersController@orderCart');
+
+    // Pesan product langsung
+    $router->post('/order/directOrder/{id}', 'OrdersController@directOrder');
+
+    // Menampilkan pesanan anda
+    $router->get('/order/myorder', 'OrdersController@myorder');
 });
 
-$router->get('/profile/{filename}', function ($filename) {
-    $path = storage_path('app/public/profile/'.$filename.'.jpg');
+// $router->get('/profile/{filename}', function ($filename) {
+//     $path = storage_path('app/public/profile/'.$filename.'.jpg');
 
-    if (!file_exists($path)) {
-        abort(404, 'File not found');
-    }
+//     if (!file_exists($path)) {
+//         abort(404, 'File not found');
+//     }
 
-    return response()->file($path);
-});
+//     return response()->file($path);
+// });
 
-$router->get('/product/{filename}', function ($filename) {
-    $path = storage_path('app/public/product/' . $filename.'.jpg');
+// $router->get('/products/{filename}', function ($filename) {
+//     $path = storage_path('app/public/product/' . $filename. '.jpg');
 
-    if (!file_exists($path)) {
-        abort(404, 'File not found');
-    }
+//     if (!file_exists($path)) {
+//         abort(404, 'File not found');
+//     }
 
-    return response()->file($path);
-});
+//     return response()->file($path);
+// });

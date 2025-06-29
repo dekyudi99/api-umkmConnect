@@ -10,7 +10,7 @@ class Order_Item extends Model
 {
     protected $table='order_item';
     protected $fillable=[
-        'order_id', 'product_id', 'quantity', 'price_at_purchase', 'description_at_purchase', 'subtotal'
+        'order_id', 'product_id', 'quantity', 'name_at_purchase', 'price_at_purchase', 'description_at_purchase', 'subtotal'
     ];
 
     public function order() {

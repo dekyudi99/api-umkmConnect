@@ -3,141 +3,268 @@
 namespace App\Http\Controllers;
 
 use App\Models\Orders;
+use App\Models\Order_Item;
 use App\Models\Products;
+use App\Models\Cart;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrdersController extends Controller
 {
-    public function index()
-    {
-        $order = Orders::all();
-
-        if ($order) {
-            return response()->json([
-                'success' => true,
-                'massage' => 'Berhasil mengambil semua data',
-                'data' => $order,
-            ], 200);
-        } else {
-            return response()->json([
-                'success' => false,
-                'massage' => 'Gagal mengambil semua data',
-            ], 400);
-        }
-    }
-
-    public function myOrder()
-    {
-        $user_id = Auth::id();
-        $order = Orders::where('user_id', $user_id)->get();
-
-        if ($order) {
-            return response()->json([
-                'success' => true,
-                'massage' => 'Berhasil mengambil semua data',
-                'data' => $order,
-            ], 200);
-        } else {
-            return response()->json([
-                'success' => false,
-                'massage' => 'Gagal mengambil semua data',
-            ], 400);
-        }
-    }
-
-    public function store(Request $request, $id)
-    {
-        $user_id = Auth::id();
-
-        $validator = Validator::make($request->all(),[
-            'quantity' => 'required|numeric',
+    // Menambahkan produk ke cart
+    public function cart(Request $request, $id) {
+        $validator = Validator::make($request->all(), [
+            'quantity' => 'required|numeric|min:1',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'massage' => 'Isi Kuantitasnya dong',
-            ], 401);
-        } else {
-            $product = Products::whereId($id)->first();
+                'message' => 'Quantity wajib diisi',
+            ], 422);
+        }
+
+        $idUser = Auth::id();
+        $quantity = $request->input('quantity');
+
+        $cart = Cart::where('user_id', $idUser)
+                ->where('product_id', $id)
+                ->first();
+        
+        if ($cart) {
+            $cart->increment('quantity', $quantity);
             
-            $order = Orders::create([
-                'user_id' => $user_id,
+            return response()->json([
+                'success' => true,
+                'message' => 'Kuantitas produk di keranjang berhasil diperbarui',
+                'data' => $cart,
+            ], 200);
+
+        } else {
+            $newCartItem = Cart::create([
+                'user_id' => $idUser,
                 'product_id' => $id,
-                'quantity' => $request->input('quantity'),
-                'total_price' => $product->price*$request->input('quantity'),
+                'quantity' => $quantity,
             ]);
 
-            if (!$order) {
+            if (!$newCartItem) {
                 return response()->json([
                     'success' => false,
-                    'massage' => 'Gagal memesan product',
-                ], 400);
-            } else {
-                return response()->json([
-                    'success' => true,
-                    'massage' => 'Pesanan berhasil',
-                    'data' => $order,
-                ], 200);
+                    'message' => 'Produk gagal ditambahkan ke keranjang',
+                ], 500);
             }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil ditambahkan ke keranjang',
+                'data' => $newCartItem,
+            ], 201);
         }
     }
 
-    public function update(Request $request, $id)
-    {
-        $user_id = Auth::id();
+    public function mycart() {
+        $id = Auth::id();
+        $cart = Cart::where('user_id', $id)->get();
 
-        $validator = Validator::make($request->all(),[
-            'quantity' => 'required|numeric',
+        if (!$cart) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data cart',
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil mengambil data cart',
+            'data' => $cart,
+        ]);
+    }
+
+    public function orderCart(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'cart_ids'       => 'required|array',
+            'cart_ids.*'     => 'exists:cart,id',
+            'shipping_address' => 'required|string',
         ]);
 
         if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $idUser = Auth::id();
+        $selectedCartIds = $request->input('cart_ids');
+
+        // 2. Ambil HANYA item yang dipilih oleh pengguna
+        // Gunakan whereIn() untuk mencocokkan dengan array ID yang dikirim
+        $cartItems = Cart::where('user_id', $idUser)
+                        ->whereIn('id', $selectedCartIds)
+                        ->with('product')
+                        ->get();
+
+        // Validasi: pastikan item yang dipilih benar-benar ada dan milik pengguna
+        if ($cartItems->count() != count($selectedCartIds)) {
+            return response()->json(['message' => 'Beberapa item tidak valid atau bukan milik Anda.'], 400);
+        }
+
+        try {
+            $order = DB::transaction(function () use ($cartItems, $idUser, $request, $selectedCartIds) {
+                
+                // Proses pembuatan Orders dan Orders_Item (LOGIKANYA TETAP SAMA)
+                $totalAmount = 0;
+                foreach ($cartItems as $item) {
+                    if (!$item->product || $item->product->stock < $item->quantity) {
+                        throw new \Exception('Stok produk ' . $item->product->name . ' tidak mencukupi.');
+                    }
+                    $totalAmount += $item->product->price * $item->quantity;
+                }
+
+                $newOrder = Orders::create([
+                    'user_id' => $idUser,
+                    'invoice_number' => 'INV-' . time(),
+                    'total_amount' => $totalAmount,
+                    'shipping_address' => $request->input('shipping_address'),
+                    'status' => 'unpaid',
+                ]);
+
+                foreach ($cartItems as $item) {
+                    Order_Item::create([
+                        'order_id' => $newOrder->id,
+                        'product_id' => $item->product_id,
+                        'quantity' => $item->quantity,
+                        'name_at_purchase' => $item->product->title,
+                        'price_at_purchase' => $item->product->price,
+                        'description_at_purchase' => $item->product->description,
+                        'subtotal' => $item->quantity * $item->product->price,
+                    ]);
+                    $item->product->decrement('stock', $item->quantity);
+                }
+                
+                // 3. Hapus HANYA item yang sudah di-checkout dari keranjang
+                Cart::whereIn('id', $selectedCartIds)->delete();
+
+                return $newOrder;
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pesanan berhasil dibuat.',
+                'order' => $order
+            ], 201);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'massage' => 'Isi Kuantitasnya dong',
-            ], 401);
-        } else {
-            $product = Products::whereId($id)->first();
-            
-            $order = Orders::update([
-                'user_id' => $user_id,
-                'product_id' => $id,
-                'quantity' => $request->input('quantity'),
-                'total_price' => $product->price*$request->input('quantity'),
-            ]);
-
-            if (!$order) {
-                return response()->json([
-                    'success' => false,
-                    'massage' => 'Gagal update product',
-                ], 400);
-            } else {
-                return response()->json([
-                    'success' => true,
-                    'massage' => 'Pesanan berhasil diupdate',
-                    'data' => $order,
-                ], 200);
-            }
+                'message' => 'Gagal membuat pesanan: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
-    public function destroy($id)
-    {
-        $order = Orders::whereId($id)->first();
-        $order->delete();
+    public function directOrder(Request $request, $id) {
+        $validator = Validator::make($request->all(), [
+            'quantity' => 'required|numeric|min:1',
+            'shipping_address' => 'required|string',
+        ]);
 
-        if (!$order) {
-            return response()->json([
-                'success' => false,
-                'massage' => 'Gagal Menghapus pesanan',
-            ], 400);
-        } else {
+        if ($validator->fails()) {
+            // Respons validasi yang lebih standar
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $idUser = Auth::id();
+        $quantity = $request->input('quantity');
+
+        // 1. Cek apakah produk ada
+        $product = Products::find($id);
+        if (!$product) {
+            return response()->json(['message' => 'Produk tidak ditemukan.'], 404);
+        }
+
+        // 2. Cek stok produk
+        if ($product->stock < $quantity) {
+            return response()->json(['message' => 'Stok produk tidak mencukupi.'], 400);
+        }
+
+        try {
+            // 3. Gunakan Database Transaction
+            $order = DB::transaction(function () use ($idUser, $product, $quantity, $request) {
+                
+                // Buat record di tabel Orders
+                $newOrder = Orders::create([
+                    'user_id' => $idUser,
+                    'invoice_number' => 'INV-' . time(),
+                    'total_amount' => $quantity * $product->price,
+                    'shipping_address' => $request->input('shipping_address'),
+                    'status' => 'unpaid',
+                ]);
+
+                // Buat record di tabel Order_Item
+                Order_Item::create([
+                    'order_id' => $newOrder->id,
+                    'product_id' => $product->id,
+                    'quantity' => $quantity,
+                    'name_at_purchase' => $product->title, 
+                    'price_at_purchase' => $product->price,
+                    'description_at_purchase' => $product->description,
+                    'subtotal' => $quantity * $product->price,
+                ]);
+
+                // 4. Kurangi stok produk
+                $product->decrement('stock', $quantity);
+                
+                return $newOrder; // Kembalikan order yang baru dibuat
+            });
+
+            // 5. Kembalikan respons sukses
             return response()->json([
                 'success' => true,
-                'massage' => 'Berhasil Menghapus data',
-            ], 200);
+                'message' => 'Pesanan berhasil dibuat.',
+                'order' => $order
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat pesanan: ' . $e->getMessage(),
+            ], 500);
         }
+    }
+
+    public function myorder() {
+        $id = Auth::id();
+        $cart = Orders::where('user_id', $id)->get();
+        
+        if (!$cart) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data pesanan',
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil menampilkan pesanan anda',
+            'data' => $cart,
+        ]);
+    }
+
+    // untuk admin melihat semua pesanan
+    public function orders() {
+        $orders = Orders::all();
+
+        if (!$orders) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menampilkan seluruh pesanan',
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil menampilkan semua data',
+            'data' => $orders,
+        ]);
     }
 }

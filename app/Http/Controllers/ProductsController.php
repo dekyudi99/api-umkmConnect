@@ -80,11 +80,17 @@ class ProductsController extends Controller
                 ], 403);
             }
 
-            $imagePath = null;
+            $imagePathForDb = 'default.png'; // Gambar default jika tidak ada upload
             if ($request->hasFile('image')) {
-                $imageName = Str::random(34) . '.' . $request->file('image')->getClientOriginalExtension();
-                $request->file('image')->move(storage_path('app/public/product'), $imageName);
-                $imagePath = $imageName;
+                $imageFile = $request->file('image');
+                // Buat nama file yang unik
+                $imageName = time() . '_' . $imageFile->getClientOriginalName();
+
+                // Pindahkan file ke public/uploads/product
+                $imageFile->move('uploads/product', $imageName);
+
+                // Ini adalah nama file yang akan Anda simpan di kolom 'image' database
+                $imagePathForDb = $imageName;
             }
 
             $product = Products::create([
@@ -95,7 +101,7 @@ class ProductsController extends Controller
                 'category'    => $request->input('category'),
                 'price'       => $request->input('price'),
                 'stock'       => $request->input('stock'),
-                'image'       => $imagePath,
+                'image'       => $imagePathForDb,
             ]);
 
             if ($product) {
@@ -160,16 +166,23 @@ class ProductsController extends Controller
             ], 422);
         }
 
-        $imagePath = $product->image;
+        $imagePathForDb = $product->image; // Ambil nama gambar yang sudah ada
 
         if ($request->hasFile('image')) {
-            if ($product->image && Storage::disk('app/public/product')->exists($product->image)) {
-                Storage::disk('app/public/profile')->delete($product->image);
+            // 1. Hapus gambar lama jika ada (dan bukan gambar default)
+            if ($product->image && $product->image != 'default.png') {
+                $oldImagePath = ('uploads/product/' . $product->image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
             }
 
-            $imageName = Str::random(34) . '.' . $request->file('image')->getClientOriginalExtension();
-            $request->file('image')->move(storage_path('app/public/product'), $imageName);
-            $imagePath = $imageName;
+            // 2. Simpan gambar baru (logika sama seperti store)
+            $imageFile = $request->file('image');
+            $imageName = time() . '_' . $imageFile->getClientOriginalName();
+            $imageFile->move('uploads/product', $imageName);
+            
+            $imagePathForDb = $imageName; // Update dengan nama file baru
         }
 
         $id_user = Auth::id();
@@ -182,7 +195,7 @@ class ProductsController extends Controller
             'category'    => $request->input('category'),
             'price'       => $request->input('price'),
             'stok'        => $request->input('stok'),
-            'image'       => $imagePath,
+            'image'       => $imagePathForDb,
         ];
 
         $updated = $product->update($productData);
