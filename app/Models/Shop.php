@@ -13,6 +13,26 @@ class Shop extends Model
         'user_id', 'name', 'foto_ktp', 'fotoProfil_toko', 'status'
     ];
 
+    protected $appends = ['foto_profil_toko_url', 'foto_ktp_url']; // Tambahkan ini
+
+    public function getFotoProfilTokoUrlAttribute()
+    {
+        if ($this->fotoProfil_toko) {
+            // Asumsi Anda menyimpan di public/uploads/toko
+            return ('http://192.168.18.35:8000/uploads/toko/' . $this->fotoProfil_toko);
+        }
+        return null;
+    }
+
+    public function getFotoKtpUrlAttribute()
+    {
+        if ($this->foto_ktp) {
+            // Asumsi Anda menyimpan di public/uploads/toko
+            return ('http://192.168.18.35:8000/uploads/foto_ktp/' . $this->foto_ktp);
+        }
+        return null;
+    }
+
     public function user() {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }

@@ -19,6 +19,20 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $table = 'users';
     protected $fillable = ['name', 'email', 'password', 'role', 'path_image'];
     protected $hidden = ['password'];
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        // 'image' adalah nama kolom di database Anda yang berisi nama file
+        if ($this->path_image) 
+        {
+            // Gunakan helper asset() untuk membuat URL ke folder public/uploads/product
+            return ('http://192.168.18.35:8000/uploads/profile/' . $this->path_image);
+        }
+
+        // Kembalikan null atau URL gambar default jika tidak ada gambar
+        return null;
+    }
 
     // Implementasi JWTSubject
     public function getJWTIdentifier()

@@ -19,7 +19,7 @@ $router->group(['middleware' => ['auth:api', 'role:admin']], function () use ($r
     // Contents Management
     $router->post('/contents/save', 'ContentsController@store');
     $router->post('/contents/update/{id}', 'ContentsController@update');
-    $router->delete('/contents/delete/{id}', 'ContentsController@delete');
+    $router->delete('/contents/delete/{id}', 'ContentsController@destroy');
     
     // Verifikasi user
     $router->post('/shop/validasi/{id}', 'ShopController@validasi');
@@ -30,8 +30,10 @@ $router->group(['middleware' => ['auth:api', 'role:admin']], function () use ($r
     // Melihat semua product
     $router->get('/product/getall', 'ProductsController@index');
 
-    // Melihat semua toko
+    // Melihat semua toko dan detail
     $router->get('/shop/shopall', 'ShopController@showAll');
+    $router->get('/shop/detail/{id}', 'ShopController@showDetail');
+    $router->delete('/shop/delete/{id}', 'ShopController@destroy');
 });
 
 $router->group(['middleware' => ['auth:api', 'role:normal,admin']], function () use ($router) {
@@ -82,7 +84,13 @@ $router->group(['middleware' => ['auth:api', 'role:normal']], function () use ($
 
     // Menampilkan pesanan anda
     $router->get('/order/myorder', 'OrdersController@myorder');
+
+    // Rute ini akan dipanggil oleh Flutter saat user menekan tombol bayar
 });
+
+// Rute ini akan dipanggil oleh server Midtrans
+$router->post('/orders/{id}/pay', 'PaymentController@createMidtransTransaction');
+$router->post('/midtrans/callback', 'MidtransCallbackController@handle');
 
 // $router->get('/profile/{filename}', function ($filename) {
 //     $path = storage_path('app/public/profile/'.$filename.'.jpg');

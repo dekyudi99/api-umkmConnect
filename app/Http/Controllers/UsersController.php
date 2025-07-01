@@ -89,22 +89,21 @@ class UsersController extends Controller
             ], 422);
         }
 
-        $imagePath = $user->path_image;
-
+        $imagePathForDb = $user->path_image; // Gambar default jika tidak ada upload
         if ($request->hasFile('path_image')) {
-            if ($user->path_image && Storage::disk('profile')->exists($user->path_image)) {
-                Storage::disk('app/public/profile')->delete($user->path_image);
-            }
-
-            $imageName = Str::random(34) . '.' . $request->file('path_image')->getClientOriginalExtension();
-            $request->file('path_image')->move(storage_path('app/public/profile'), $imageName);
-            $imagePath = $imageName;
+            $imageFile = $request->file('path_image');
+            // Buat nama file yang unik
+            $imageName = time() . '_' . $imageFile->getClientOriginalName();
+            // Pindahkan file ke public/uploads/product
+            $imageFile->move('uploads/profile', $imageName);
+            // Ini adalah nama file yang akan Anda simpan di kolom 'image' database
+            $imagePathForDb = $imageName;
         }
 
         $userData = [
             'name'        => $request->input('name'),
             'email'       => $request->input('email'),
-            'path_image'  => $imagePath,
+            'path_image'  => $imagePathForDb,
         ];
 
         if ($request->has('password') && !empty($request->input('password'))) {

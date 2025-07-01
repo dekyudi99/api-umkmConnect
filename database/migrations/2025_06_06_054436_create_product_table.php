@@ -21,7 +21,7 @@ return new class extends Migration
             $table->integer('price');
             $table->integer('stock');
             $table->string('image');
-            $table->string('rating')->nullable();
+            $table->float('rating')->nullable();
             $table->timestamps();
             $table->foreign('shop_id')->references('id')->on('shop')->onDelete('cascade')->onUpdate('cascade');
         });

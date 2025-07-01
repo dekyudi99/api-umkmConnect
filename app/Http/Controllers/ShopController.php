@@ -29,7 +29,24 @@ class ShopController extends Controller
     }
 
     public function showAll() {
-        $shop = Shop::all();
+        $shop = Shop::with('user')->get();
+        
+        if ($shop) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil memngambil data toko',
+                'data' => $shop,
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data'
+            ], 500);
+        }
+    }
+
+    public function showDetail($id) {
+        $shop = Shop::with('user')->find($id);
         
         if ($shop) {
             return response()->json([
@@ -52,6 +69,15 @@ class ShopController extends Controller
             'name' => 'required',
             'foto_ktp' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
+        $shop = Shop::where('user_id', $id)->first();
+        
+        if ($shop) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lu udah punya toko anjir',
+            ], 409);
+        }
 
         if($validator->fails()) {
             return response()->json([
@@ -154,6 +180,7 @@ class ShopController extends Controller
             return response()->json([
                 'success' => false,
                 'massage' => 'Status wajib diisi',
+                'errors'  => $validator->errors(),
             ], 422);
         } else {
             $shop->update([
@@ -168,13 +195,26 @@ class ShopController extends Controller
                     'success' => true,
                     'message' => 'Toko Telah Diverivikasi',
                     'data'    => $shop,
-                ], 201);
+                ], 200);
             } else {
                 return response()->json([
                     'success' => false,
                     'message' => 'Toko Gagal Diverifikasi',
                 ], 400);
             }
+        }
+    }
+
+    public function destroy($id) {
+        $shop = Shop::whereId($id);
+
+        $shop->delete();
+
+        if ($shop) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Toko Berhasil Dihapus!',
+            ], 200);
         }
     }
 }

@@ -6,13 +6,28 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Shop;
 use App\Models\Order_Item;
 use App\Models\Cart;
+use Illuminate\Support\Facades\Storage;
 
 class Products extends Model
 {
+    protected $appends = ['image_url'];
     protected $table = 'product';
     protected $fillable = [
         'shop_id', 'title', 'description', 'location', 'category', 'price', 'stock', 'image', 'rating'
     ];
+
+    public function getImageUrlAttribute()
+    {
+        // 'image' adalah nama kolom di database Anda yang berisi nama file
+        if ($this->image) 
+        {
+            // Gunakan helper asset() untuk membuat URL ke folder public/uploads/product
+            return ('http://192.168.18.35:8000/uploads/product/' . $this->image);
+        }
+
+        // Kembalikan null atau URL gambar default jika tidak ada gambar
+        return null;
+    }
 
     public function user() {
         return $this->belongsTo(Shop::class, 'shop_id', 'id');

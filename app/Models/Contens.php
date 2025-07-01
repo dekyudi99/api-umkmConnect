@@ -9,7 +9,7 @@ class Contens extends Model
 {
     protected $table = 'contents';
     protected $fillable = [
-        'title', 'video', 'description', 'creator',
+        'title', 'video', 'description', 'creator', 'playlist', 'thumbnail',
     ];
 
     public function user() {

@@ -32,7 +32,8 @@ class ContentsController extends Controller
             'title'       => 'required',
             'video'       => 'required',
             'description' => 'required',
-            'creator'     => 'required'
+            'creator'     => 'required',
+            'playlist'    => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -47,6 +48,8 @@ class ContentsController extends Controller
                 'video'       => $request->input('video'),
                 'description' => $request->input('description'),
                 'creator'     => $request->input('creator'),
+                'playlist'    => $request->input('playlist'),
+                'thumbnail'   => 'https://img.youtube.com/vi/'.$request->input('video').'/maxresdefault.jpg',
             ]);
 
             if ($content) {
@@ -97,6 +100,7 @@ class ContentsController extends Controller
             'video'        => 'required',
             'description'  => 'required',
             'creator'      => 'required',
+            'playlist'     => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -112,6 +116,8 @@ class ContentsController extends Controller
             'video'        => $request->input('video'),
             'description'  => $request->input('description'),
             'creator'      => $request->input('creator'),
+            'playlist'    => $request->input('playlist'),
+            'thumbnail'   => 'https://img.youtube.com/vi/'.$request->input('video').'/maxresdefault.jpg',
         ];
 
         $updated = $content->update($contentData);

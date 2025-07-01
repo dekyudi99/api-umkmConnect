@@ -66,7 +66,7 @@ class OrdersController extends Controller
 
     public function mycart() {
         $id = Auth::id();
-        $cart = Cart::where('user_id', $id)->get();
+        $cart = Cart::where('user_id', $id)->with('product')->get();
 
         if (!$cart) {
             return response()->json([
@@ -234,8 +234,10 @@ class OrdersController extends Controller
 
     public function myorder() {
         $id = Auth::id();
-        $cart = Orders::where('user_id', $id)->get();
-        
+        $cart = Orders::where('user_id', $id)
+                   ->orderBy('created_at', 'desc') // Urutkan dari yang terbaru
+                   ->get();
+
         if (!$cart) {
             return response()->json([
                 'success' => false,
