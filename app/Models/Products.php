@@ -22,7 +22,7 @@ class Products extends Model
         if ($this->image) 
         {
             // Gunakan helper asset() untuk membuat URL ke folder public/uploads/product
-            return ('http://192.168.18.35:8000/uploads/product/' . $this->image);
+            return ('https://e2f3-182-253-163-199.ngrok-free.app/umkmconnect/public/uploads/product/' . $this->image);
         }
 
         // Kembalikan null atau URL gambar default jika tidak ada gambar

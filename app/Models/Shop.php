@@ -19,7 +19,7 @@ class Shop extends Model
     {
         if ($this->fotoProfil_toko) {
             // Asumsi Anda menyimpan di public/uploads/toko
-            return ('http://192.168.18.35:8000/uploads/toko/' . $this->fotoProfil_toko);
+            return ('https://e2f3-182-253-163-199.ngrok-free.app/umkmconnect/public/uploads/toko/' . $this->fotoProfil_toko);
         }
         return null;
     }
@@ -28,7 +28,7 @@ class Shop extends Model
     {
         if ($this->foto_ktp) {
             // Asumsi Anda menyimpan di public/uploads/toko
-            return ('http://192.168.18.35:8000/uploads/foto_ktp/' . $this->foto_ktp);
+            return ('https://e2f3-182-253-163-199.ngrok-free.app/umkmconnect/public/uploads/foto_ktp/' . $this->foto_ktp);
         }
         return null;
     }

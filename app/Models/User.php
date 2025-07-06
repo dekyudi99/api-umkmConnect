@@ -27,7 +27,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         if ($this->path_image) 
         {
             // Gunakan helper asset() untuk membuat URL ke folder public/uploads/product
-            return ('http://192.168.18.35:8000/uploads/profile/' . $this->path_image);
+            return ('https://e2f3-182-253-163-199.ngrok-free.app/umkmconnect/public/uploads/profile/' . $this->path_image);
         }
 
         // Kembalikan null atau URL gambar default jika tidak ada gambar
