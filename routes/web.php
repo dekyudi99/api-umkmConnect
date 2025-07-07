@@ -71,6 +71,7 @@ $router->group(['middleware' => ['auth:api', 'role:normal']], function () use ($
     $router->post('/shop/save', 'ShopController@store');
     $router->get('/shop/show', 'ShopController@show');
     $router->post('/shop/update', 'ShopController@update');
+    $router->get('/shop/orders', 'OrdersController@orderShop');
 
     // Menambahkan dan melihat product ke cart
     $router->post('/order/cart/{id}', 'OrdersController@cart');

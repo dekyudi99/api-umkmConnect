@@ -6,6 +6,7 @@ use App\Models\Orders;
 use App\Models\Order_Item;
 use App\Models\Products;
 use App\Models\Cart;
+use App\Models\Shop;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -268,5 +269,36 @@ class OrdersController extends Controller
             'message' => 'Berhasil menampilkan semua data',
             'data' => $orders,
         ]);
+    }
+
+    public function orderShop()
+    {
+        $shop = auth()->user()->shop;
+
+        // Jika pengguna tidak memiliki toko, kembalikan array kosong
+        if (!$shop) {
+            return response()->json(['data' => []]);
+        }
+
+        // 1. Ambil semua ID produk dari toko ini
+        $productIds = $shop->product()->pluck('id')->toArray();
+
+        // 2. Cari semua order_id unik yang memiliki item produk dari toko ini
+        //    Kita hanya perlu ID pesanan-nya, dan pastikan tidak ada duplikat.
+        $orderIds = \App\Models\Order_Item::whereIn('product_id', $productIds)
+                                ->distinct()
+                                ->pluck('order_id');
+
+        // 3. Ambil data pesanan lengkap berdasarkan ID yang sudah didapat
+        //    dan urutkan dari yang terbaru.
+        $orders = \App\Models\Orders::whereIn('id', $orderIds)
+                                ->orderBy('created_at', 'desc')
+                                ->get();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil menampilkan pesanan yang masuk ke toko',
+            'data'    => $orders,
+        ], 200);
     }
 }

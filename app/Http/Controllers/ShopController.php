@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Shop;
+use App\Models\Orders;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +13,7 @@ class ShopController extends Controller
 {
     public function show() {
         $id = Auth::id();
-        $shop = Shop::where('user_id', $id)->get();
+        $shop = Shop::where('user_id', $id)->first();
         
         if ($shop) {
             return response()->json([
